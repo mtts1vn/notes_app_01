@@ -1,6 +1,7 @@
 package com.appxstudios.drawerapp.ui
 
 import android.os.Bundle
+import android.text.Editable
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -13,7 +14,7 @@ import com.appxstudios.drawerapp.datasource.NotesDatasource
 import com.appxstudios.drawerapp.model.Note
 import java.util.Calendar
 
-class CreateNoteFragment : Fragment() {
+class NoteFragment : Fragment() {
     private lateinit var binding: FragmentCreateNoteBinding;
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -25,14 +26,23 @@ class CreateNoteFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         binding = FragmentCreateNoteBinding.inflate(inflater, container, false);
+        val note: Note? = arguments?.getSerializable("nota") as Note?;
+
+        if (note != null) {
+            binding.edtxtTitleNote.text = Editable.Factory.getInstance().newEditable(note.title);
+            binding.edtxtContentNote.text =
+                Editable.Factory.getInstance().newEditable(note.content);
+        }
 
         binding.btnCreateNote.setOnClickListener {
             if (!binding.edtxtContentNote.text.isNullOrBlank() && !binding.edtxtTitleNote.text.isNullOrBlank()) {
-                Toast.makeText(binding.root.context, "A nota foi criada!", Toast.LENGTH_SHORT).show();
-                createNote(
-                    binding.edtxtTitleNote.text.toString(),
-                    binding.edtxtContentNote.text.toString()
-                );
+                when (note) {
+                    null -> createNote(
+                        binding.edtxtTitleNote.text.toString(),
+                        binding.edtxtContentNote.text.toString()
+                    );
+                    else -> saveEditNote(note)
+                }
             } else {
                 Toast.makeText(binding.root.context, "Preencha todos!", Toast.LENGTH_SHORT).show();
             }
@@ -40,14 +50,14 @@ class CreateNoteFragment : Fragment() {
 
         binding.btnHome.setOnClickListener {
             val navController = activity?.findNavController(R.id.nav_host_fragment_content_main)
-            navController?.navigate(R.id.nav_contato)
+            navController?.navigate(R.id.nav_home)
         }
 
         return binding.root;
     }
 
-
-    fun createNote(title: String, content: String) {
+    private fun createNote(title: String, content: String) {
+        showToast("A nota foi criada!");
         val calendar = Calendar.getInstance()
         calendar.apply {
             val dia = get(Calendar.DAY_OF_MONTH)
@@ -62,5 +72,19 @@ class CreateNoteFragment : Fragment() {
                 )
             )
         }
+    }
+
+    private fun saveEditNote(note: Note) {
+        showToast("A nota foi salva!");
+        val index = note?.let { NotesDatasource.getIndex(it) };
+        val newNote: Note = note.copy(
+            binding.edtxtTitleNote.text.toString(),
+            binding.edtxtContentNote.text.toString(),
+        )
+        index?.let { NotesDatasource.replace(newNote, it) };
+    }
+
+    private fun showToast(text: String) {
+        Toast.makeText(binding.root.context, text, Toast.LENGTH_SHORT).show();
     }
 }

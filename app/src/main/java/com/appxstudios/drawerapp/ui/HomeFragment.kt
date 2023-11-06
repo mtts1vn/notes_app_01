@@ -18,7 +18,7 @@ import com.appxstudios.drawerapp.datasource.NotesDatasource
 import com.appxstudios.drawerapp.model.Note
 
 
-class HomeFragment : Fragment() {
+class HomeFragment : Fragment(), NotesListAdapter.ItemClickListener {
     private lateinit var binding: FragmentHomeBinding;
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,11 +38,22 @@ class HomeFragment : Fragment() {
 
         binding.rcNotesRecycler.layoutManager =
             StaggeredGridLayoutManager(2, LinearLayoutManager.VERTICAL);
-        binding.rcNotesRecycler.adapter = NotesListAdapter();
+        val adapter = NotesListAdapter()
+        adapter.itemClickListener = this
+        binding.rcNotesRecycler.adapter = adapter
+
         return binding.root;
     }
 
     private fun defineTextWelcome(): String {
         return "${NotesDatasource.getNotes().size} Notas"
+    }
+
+    override fun onItemClick(note: Note) {
+        val navController = requireActivity().findNavController(R.id.nav_host_fragment_content_main)
+        val bundle: Bundle = Bundle()
+        bundle.putSerializable("nota", note)
+
+        navController.navigate(R.id.nav_create, bundle)
     }
 }

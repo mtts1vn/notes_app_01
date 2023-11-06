@@ -25,4 +25,16 @@ object NotesDatasource {
     fun clearNotes() {
         notesList.clear()
     }
+
+    fun checkIfExist(note: Note?): Boolean {
+        return notesList.contains(note);
+    }
+
+    fun getIndex(note: Note): Int {
+        return notesList.indexOf(note);
+    }
+
+    fun replace(note: Note, index: Int) {
+        notesList[index] = note;
+    }
 }

@@ -38,11 +38,14 @@
             android:layout_weight="1"
             android:textSize="15sp"
             android:text="@string/create_btn"
-            android:backgroundTint="@android:color/transparent"
+            android:backgroundTint="@null"
             android:background="@drawable/bg_button"
             android:textColor="@color/black"
             android:layout_marginLeft="20dp"
-            />
+            android:elevation="0dp"
+            android:stateListAnimator="@null"
+        />
+
     </LinearLayout>
 
 
