@@ -37,11 +37,8 @@ class NoteFragment : Fragment() {
         binding.btnCreateNote.setOnClickListener {
             if (!binding.edtxtContentNote.text.isNullOrBlank() && !binding.edtxtTitleNote.text.isNullOrBlank()) {
                 when (note) {
-                    null -> createNote(
-                        binding.edtxtTitleNote.text.toString(),
-                        binding.edtxtContentNote.text.toString()
-                    );
-                    else -> saveEditNote(note)
+                    null -> saveNote(null, true);
+                    else -> saveNote(note, false);
                 }
             } else {
                 Toast.makeText(binding.root.context, "Preencha todos!", Toast.LENGTH_SHORT).show();
@@ -56,33 +53,40 @@ class NoteFragment : Fragment() {
         return binding.root;
     }
 
-    private fun createNote(title: String, content: String) {
-        showToast("A nota foi criada!");
-        val calendar = Calendar.getInstance()
-        calendar.apply {
-            val dia = get(Calendar.DAY_OF_MONTH)
-            val mes = get(Calendar.MONTH) + 1
-            val ano = get(Calendar.YEAR)
-            val data = "$dia/$mes/$ano"
-            NotesDatasource.addNote(
-                Note(
-                    title,
-                    content,
-                    data
-                )
-            )
+    private fun saveNote(note: Note?, isNewNote: Boolean) {
+        val title = binding.edtxtTitleNote.text.toString()
+        val content = binding.edtxtContentNote.text.toString()
+
+        when {
+            isNewNote -> {
+                showToast("A nota foi criada!")
+                val calendar = Calendar.getInstance()
+                calendar.apply {
+                    val dia = get(Calendar.DAY_OF_MONTH)
+                    val mes = get(Calendar.MONTH) + 1
+                    val ano = get(Calendar.YEAR)
+                    val data = "$dia/$mes/$ano"
+                    NotesDatasource.addNote(
+                        Note(
+                            title,
+                            content,
+                            data
+                        )
+                    )
+                }
+            }
+            note != null -> {
+                showToast("A nota foi salva!")
+                val index = note?.let { NotesDatasource.getIndex(it) }
+                val newNote = note.copy(title = title, content = content)
+                index?.let { NotesDatasource.replace(newNote, it) }
+            }
+            else -> {
+                showToast("Erro ao salvar a nota!")
+            }
         }
     }
 
-    private fun saveEditNote(note: Note) {
-        showToast("A nota foi salva!");
-        val index = note?.let { NotesDatasource.getIndex(it) };
-        val newNote: Note = note.copy(
-            binding.edtxtTitleNote.text.toString(),
-            binding.edtxtContentNote.text.toString(),
-        )
-        index?.let { NotesDatasource.replace(newNote, it) };
-    }
 
     private fun showToast(text: String) {
         Toast.makeText(binding.root.context, text, Toast.LENGTH_SHORT).show();
